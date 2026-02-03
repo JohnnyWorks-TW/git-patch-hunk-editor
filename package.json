@@ -16,7 +16,8 @@
   "main": ".vite/build/main.js",
   "dependencies": {
     "electron-squirrel-startup": "^1.0.0",
-    "vue": "^3.4.15"
+    "vue": "^3.4.15",
+    "vue-i18n": "^11.2.8"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.2.0",

@@ -1,0 +1,17 @@
+{
+  "app_title": "Patch Hunk Editor",
+  "open_patch": "開啟 Patch",
+  "save_patch": "儲存 Patch",
+  "no_file": "未開啟任何檔案",
+  "drag_drop_hint": "拖曳檔案至此開啟，或點擊瀏覽檔案",
+  "close_overlay": "關閉",
+  "unsaved_changes_title": "未儲存的變更",
+  "unsaved_changes_message": "關閉前是否要儲存您的變更？",
+  "btn_save": "儲存",
+  "btn_dont_save": "不儲存",
+  "btn_cancel": "取消",
+  "msg_saved_success": "儲存成功！",
+  "msg_save_failed": "儲存失敗：{error}",
+  "msg_read_error": "讀取檔案失敗：{error}",
+  "msg_path_error": "無法判斷檔案路徑，請使用瀏覽功能。"
+}

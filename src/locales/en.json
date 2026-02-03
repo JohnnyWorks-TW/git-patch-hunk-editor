@@ -1,0 +1,17 @@
+{
+  "app_title": "Patch Hunk Editor",
+  "open_patch": "Open Patch",
+  "save_patch": "Save Patch",
+  "no_file": "No file opened",
+  "drag_drop_hint": "Drag file to open or click to browse file",
+  "close_overlay": "Close",
+  "unsaved_changes_title": "Unsaved Changes",
+  "unsaved_changes_message": "Do you want to save your changes before quitting?",
+  "btn_save": "Save",
+  "btn_dont_save": "Don't Save",
+  "btn_cancel": "Cancel",
+  "msg_saved_success": "Saved successfully!",
+  "msg_save_failed": "Save failed: {error}",
+  "msg_read_error": "Error reading file: {error}",
+  "msg_path_error": "Cannot determine file path. Please use Browse."
+}

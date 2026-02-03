@@ -9,12 +9,16 @@
   >
     <header class="toolbar">
       <div class="title">
-        Patch Hunk Editor 
+        {{ $t('app_title') }}
         <span v-if="isDirty" class="dirty-indicator">*</span>
       </div>
       <div class="actions">
-        <button @click="showOpenUI = true">Open Patch</button>
-        <button @click="saveFile" :disabled="!files.length">Save Patch</button>
+        <select v-model="locale" class="lang-select">
+          <option value="en" :selected="locale === 'en'">English</option>
+          <option value="zh-TW" :selected="locale === 'zh-TW'">繁體中文</option>
+        </select>
+        <button @click="showOpenUI = true">{{ $t('open_patch') }}</button>
+        <button @click="saveFile" :disabled="!files.length">{{ $t('save_patch') }}</button>
       </div>
     </header>
     
@@ -48,7 +52,7 @@
 
     <!-- Empty State: No File Loaded -->
     <div v-else-if="!files.length && !showOpenUI && !isDragging" class="empty-state">
-      <p>No file opened</p>
+      <p>{{ $t('no_file') }}</p>
     </div>
 
     <!-- Open/Drop Overlay -->
@@ -58,11 +62,11 @@
       @click="openFileSystemDialog"
     >
       <div class="drop-message">
-        <button v-if="files.length > 0 || showOpenUI" @click.stop="showOpenUI = false" class="close-overlay-btn" title="Close">
+        <button v-if="files.length > 0 || showOpenUI" @click.stop="showOpenUI = false" class="close-overlay-btn" :title="$t('close_overlay')">
           ✕
         </button>
         <div class="icon">📂</div>
-        <p>Drag file to open or click to browse file</p>
+        <p>{{ $t('drag_drop_hint') }}</p>
       </div>
     </div>
   </div>
@@ -70,13 +74,19 @@
 
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue';
+import { useI18n } from 'vue-i18n';
 import { PatchParser } from './utils/patchParser';
 import HunkItem from './components/HunkItem.vue';
+
+const { t, locale } = useI18n();
 
 const files = ref([]);
 const selectedFileIndex = ref(0);
 const currentFilePath = ref('');
 const isDirty = ref(false);
+
+// Default locale is English
+locale.value = 'en';
 
 // UI States
 const showOpenUI = ref(false);
@@ -96,8 +106,7 @@ async function openFileSystemDialog() {
   const result = await window.electronAPI.openFile();
   if (result) {
     if (isDirty.value) {
-       // Ideally ask here too, but for now just load (or we rely on user clicking save)
-       // Let's reset dirty since it's a new file
+       // Ideally ask here too
     }
     loadFile(result.filePath, result.content);
   }
@@ -117,10 +126,10 @@ async function handleDrop(e) {
        if (result.success) {
          loadFile(filePath, result.content);
        } else {
-         alert('Error reading file: ' + result.error);
+         alert(t('msg_read_error', { error: result.error }));
        }
     } else {
-       alert('Cannot determine file path. Please use Browse.');
+       alert(t('msg_path_error'));
     }
   }
 }
@@ -155,12 +164,9 @@ async function saveFile() {
   });
   if (result.success) {
     isDirty.value = false;
-    // alert('Saved successfully!'); // Optional: removed for smoother flow or keep it? existing had it.
-    // Let's keep a small notification or just rely on dirty indicator clearing.
-    // Existing code had alert, maybe annoying if frequent saving.
-    // I'll leave the alert out for now as the dirty star clearing is feedback.
+    alert(t('msg_saved_success')); 
   } else {
-    alert('Save failed: ' + result.error);
+    alert(t('msg_save_failed', { error: result.error }));
   }
 }
 
@@ -176,30 +182,23 @@ function handleSplit(hunkIndex, lineIndex) {
 /* Close Confirmation */
 async function handleBeforeUnload(e) {
     if (isDirty.value) {
-        e.returnValue = false; // Required for Electron/Chromium to pause
+        e.returnValue = false; 
         
-        // Show dialog
         const { response } = await window.electronAPI.showMessageBox({
             type: 'question',
-            buttons: ['Save', "Don't Save", 'Cancel'],
-            title: 'Unsaved Changes',
-            message: 'Do you want to save your changes before quitting?'
+            buttons: [t('btn_save'), t('btn_dont_save'), t('btn_cancel')],
+            title: t('unsaved_changes_title'),
+            message: t('unsaved_changes_message')
         });
 
         if (response === 0) { // Save
             await saveFile(); 
-            // After save, we need to allow close.
             isDirty.value = false; 
-            // Re-trigger close? Window might not close automatically after async dialog.
-            // We need to tell main process to close window now.
-            // But we are in beforeunload which is tricky.
-            // Standard trick: isDirty is now false, so next close works.
             window.close();
         } else if (response === 1) { // Don't Save
             isDirty.value = false;
             window.close();
         } 
-        // Cancel (2) -> Do nothing, stay open.
     }
 }
 
@@ -247,6 +246,15 @@ body { margin: 0; font-family: sans-serif; height: 100vh; overflow: hidden; }
   padding: 5px 15px;
   margin-left: 10px;
   cursor: pointer;
+}
+
+.lang-select {
+  padding: 5px;
+  margin-left: 10px;
+  cursor: pointer;
+  background: #eee;
+  border: 1px solid #999;
+  border-radius: 4px;
 }
 
 .main-content {
