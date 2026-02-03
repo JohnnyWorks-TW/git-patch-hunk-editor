@@ -1,0 +1,17 @@
+diff --git a/src/test.txt b/src/test.txt
+index 83db48f..bf32145 100644
+--- a/src/test.txt
++++ b/src/test.txt
+@@ -1,5 +1,5 @@
+ line 1
+-line 2
++line 2 modified
+ line 3
+ line 4
+ line 5
+@@ -10,6 +10,6 @@ line 9
+ line 10
+-line 11
++line 11 modified
+ line 12
+ line 13
