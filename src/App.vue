@@ -18,7 +18,10 @@
           <option value="zh-TW" :selected="locale === 'zh-TW'">繁體中文</option>
         </select>
         <button @click="showOpenUI = true">{{ $t('open_patch') }}</button>
-        <button @click="saveFile" :disabled="!files.length">{{ $t('save_patch') }}</button>
+        <template v-if="files.length">
+            <button @click="saveFile">{{ $t('save_file') }}</button>
+            <button @click="closeFile">{{ $t('close_file') }}</button>
+        </template>
       </div>
     </header>
     
@@ -105,10 +108,9 @@ function getFileName(header) {
 async function openFileSystemDialog() {
   const result = await window.electronAPI.openFile();
   if (result) {
-    if (isDirty.value) {
-       // Ideally ask here too
+    if (await checkUnsavedChanges()) {
+        loadFile(result.filePath, result.content);
     }
-    loadFile(result.filePath, result.content);
   }
 }
 
@@ -118,6 +120,8 @@ async function handleDrop(e) {
   
   const droppedFiles = e.dataTransfer.files;
   if (droppedFiles.length > 0) {
+    if (!await checkUnsavedChanges()) return;
+
     const file = droppedFiles[0];
     const filePath = file.path; 
     
@@ -140,6 +144,15 @@ function loadFile(path, content) {
     selectedFileIndex.value = 0;
     showOpenUI.value = false;
     isDirty.value = false;
+}
+
+async function closeFile() {
+    if (await checkUnsavedChanges()) {
+        files.value = [];
+        currentFilePath.value = '';
+        isDirty.value = false;
+        selectedFileIndex.value = 0;
+    }
 }
 
 /* Drag Events */
@@ -179,10 +192,33 @@ function handleSplit(hunkIndex, lineIndex) {
   isDirty.value = true;
 }
 
-/* Close Confirmation */
+async function checkUnsavedChanges() {
+    if (!isDirty.value || !files.value.length) return true;
+
+    const { response } = await window.electronAPI.showMessageBox({
+        type: 'question',
+        buttons: [t('btn_save'), t('btn_dont_save'), t('btn_cancel')],
+        title: t('unsaved_changes_title'),
+        message: t('unsaved_changes_message')
+    });
+
+    if (response === 0) { // Save
+        await saveFile();
+        return true; 
+    } else if (response === 1) { // Don't Save
+        return true;
+    } 
+    return false; // Cancel
+}
+
+/* Close Confirmation (App Quit) */
 async function handleBeforeUnload(e) {
-    if (isDirty.value) {
+    if (isDirty.value && files.value.length) {
         e.returnValue = false; 
+        
+        // We can reuse logic or call direct to ensure sync behavior if needed?
+        // Electron beforeunload is async-ish but need returnValue set synchronously.
+        // checkUnsavedChanges handles async dialog, so we do it manual here to be safe/consistent with existing code structure.
         
         const { response } = await window.electronAPI.showMessageBox({
             type: 'question',

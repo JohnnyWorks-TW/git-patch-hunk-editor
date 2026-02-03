@@ -1,7 +1,8 @@
 {
   "app_title": "Patch Hunk Editor",
-  "open_patch": "Open Patch",
-  "save_patch": "Save Patch",
+  "open_patch": "Open File",
+  "save_file": "Save File",
+  "close_file": "Close File",
   "no_file": "No file opened",
   "drag_drop_hint": "Drag file to open or click to browse file",
   "close_overlay": "Close",
